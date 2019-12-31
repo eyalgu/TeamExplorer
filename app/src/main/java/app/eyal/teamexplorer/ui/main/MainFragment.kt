@@ -6,26 +6,39 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
 import app.eyal.teamexplorer.R
+import app.eyal.teamexplorer.databinding.MainFragmentBinding
+import com.airbnb.mvrx.BaseMvRxFragment
+import com.airbnb.mvrx.fragmentViewModel
+import com.airbnb.mvrx.withState
+import kotlinx.android.synthetic.main.main_fragment.*
 
-class MainFragment : Fragment() {
+class MainFragment : BaseMvRxFragment() {
 
     companion object {
         fun newInstance() = MainFragment()
     }
 
-    private lateinit var viewModel: MainViewModel
+    private val presenter: Presenter by fragmentViewModel()
+    lateinit var binding: MainFragmentBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.main_fragment, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false)
+        return binding.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
-        // TODO: Use the ViewModel
+    override fun invalidate() = withState(presenter) { state ->
+        binding.viewState = state
+        binding.recyclerView.withModels {
+            state.userList?.forEach {
+
+            }
+        }
     }
+
+
 }
