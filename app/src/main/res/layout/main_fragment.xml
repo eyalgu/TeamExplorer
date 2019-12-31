@@ -6,14 +6,14 @@
     <data>
         <variable
             name="viewState"
-            type="app.eyal.teamexplorer.ui.main.MainState" />
+            type="app.eyal.teamexplorer.presenter.MainState" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.main.MainFragment">
+        tools:context=".ui.MainFragment">
 
         <TextView
             android:layout_width="wrap_content"

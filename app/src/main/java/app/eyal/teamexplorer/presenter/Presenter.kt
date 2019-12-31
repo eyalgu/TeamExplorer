@@ -1,4 +1,4 @@
-package app.eyal.teamexplorer.ui.main
+package app.eyal.teamexplorer.presenter
 
 import android.view.View
 import androidx.lifecycle.viewModelScope
@@ -13,6 +13,7 @@ import com.airbnb.mvrx.ViewModelContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.lang.Exception
 
 data class UserRowState(
     val imageUrl: String,
@@ -28,17 +29,19 @@ data class MainState(
 ) : MvRxState {
 
     companion object {
-        val Loading = MainState(loadingIndicatorVisibility = View.VISIBLE)
+        val Loading =
+            MainState(loadingIndicatorVisibility = View.VISIBLE)
 
         fun Error(errorMessage: String) = MainState(
             errorMessageVisibility = View.VISIBLE,
             errorMessage = errorMessage
         )
 
-        fun Data(userList: List<UserRowState>) = MainState(
-            userListVisibility = View.VISIBLE,
-            userList = userList
-        )
+        fun Data(userList: List<UserRowState>) =
+            MainState(
+                userListVisibility = View.VISIBLE,
+                userList = userList
+            )
     }
 }
 
@@ -48,10 +51,11 @@ class Presenter(initialState: MainState, slackService: SlackService) :
     class Factory(
         private val slackService: SlackService
     ) {
-        fun create(initialState: MainState): Presenter = Presenter(
-            initialState = initialState,
-            slackService = slackService
-        )
+        fun create(initialState: MainState): Presenter =
+            Presenter(
+                initialState = initialState,
+                slackService = slackService
+            )
     }
 
     companion object : MvRxViewModelFactory<Presenter, MainState> {
@@ -70,36 +74,26 @@ class Presenter(initialState: MainState, slackService: SlackService) :
             MainState.Loading
     }
 
-    // private val userId: LiveData<String> = MutableLiveData()
     init {
-        // liveData {
-        //     emit(database.loadUserById(id))
-        // }
-
         viewModelScope.launch {
-            val list = withContext(viewModelScope.coroutineContext + Dispatchers.IO) {
+            try {
+                val list = withContext(viewModelScope.coroutineContext + Dispatchers.IO) {
                     slackService.userList(SlackService.TOKEN)
                 }
-            setState {
-                MainState.Data(list.toRowState())
+                setState {
+                    MainState.Data(list.toRowState())
+                }
+            } catch (e: Exception) {
+                setState { MainState.Error(e.message ?: e.javaClass.simpleName) }
             }
         }
     }
 }
 
-private fun UserList.toRowState() = members.map { UserRowState(
-    imageUrl = it.profile.image_512,
-    name = it.profile.display_name)
+private fun UserList.toRowState() = members.map {
+    UserRowState(
+        imageUrl = it.profile.image_192,
+        name = it.profile.display_name
+    )
 }
 
-// class UserListAdapter : Typed2EpoxyController() {
-//     fun bindSearchData(data: SearchData) {
-//         header.setCity(data.city)
-//         guidebookRow.showIf(data.hasGuideBook())
-//         for (neighborhood in data.neighborhoods) {
-//             addModel(NeighborhoodCarouselModel(neighborhood))
-//         }
-//         loader.showIf(data.hasMoreToLoad())
-//         notifyModelsChanged()
-//     }
-// }

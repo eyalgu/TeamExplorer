@@ -3,7 +3,7 @@ package app.eyal.teamexplorer.wiring
 import android.app.Activity
 import androidx.fragment.app.Fragment
 import app.eyal.teamexplorer.repository.SlackService
-import app.eyal.teamexplorer.ui.main.Presenter
+import app.eyal.teamexplorer.presenter.Presenter
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit

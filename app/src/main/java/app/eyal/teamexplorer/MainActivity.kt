@@ -2,7 +2,7 @@ package app.eyal.teamexplorer
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import app.eyal.teamexplorer.ui.main.MainFragment
+import app.eyal.teamexplorer.ui.MainFragment
 
 class MainActivity : AppCompatActivity() {
 
