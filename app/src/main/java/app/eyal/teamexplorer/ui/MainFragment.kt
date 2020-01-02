@@ -7,8 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import app.eyal.teamexplorer.R
+import app.eyal.teamexplorer.UserRowItemBindingModel_
 import app.eyal.teamexplorer.databinding.MainFragmentBinding
+import app.eyal.teamexplorer.databinding.UserRowItemBinding
 import app.eyal.teamexplorer.presenter.Presenter
+import app.eyal.teamexplorer.userRowItem
 import com.airbnb.epoxy.addGlidePreloader
 import com.airbnb.epoxy.glidePreloader
 import com.airbnb.mvrx.BaseMvRxFragment
@@ -20,6 +23,7 @@ import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
+import kotlinx.android.synthetic.main.user_row_item.*
 
 class MainFragment : BaseMvRxFragment() {
 
@@ -37,8 +41,8 @@ class MainFragment : BaseMvRxFragment() {
         binding = DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false)
         binding.recyclerView.addGlidePreloader(
             Glide.with(this),
-            preloader = glidePreloader { requestManager, epoxyModel: UserRowModel, viewData ->
-                requestManager.loadImage(epoxyModel.imageUrl)
+            preloader = glidePreloader { requestManager, epoxyModel: UserRowItemBindingModel_, viewData ->
+                requestManager.loadImage(epoxyModel.viewState().imageUrl)
             }
         )
         return binding.root
@@ -48,10 +52,18 @@ class MainFragment : BaseMvRxFragment() {
         binding.viewState = state
         binding.recyclerView.withModels {
             state.userList?.forEach {
-                userRow {
-                    id("image_id_${it.imageUrl}")
-                    imageUrl(it.imageUrl)
-                    displayName(it.name)
+                userRowItem {
+                    viewState(it)
+                    id(it.id)
+                    onBind  { model , view, position ->
+                        val binding =  view.dataBinding as UserRowItemBinding
+                        Glide.with(this@MainFragment).loadImage(it.imageUrl).into(binding.avatar)
+                    }
+
+                    onUnbind { model, view ->
+                        val binding =  view.dataBinding as UserRowItemBinding
+                        Glide.with(this@MainFragment).clear(binding.avatar)
+                    }
                 }
             }
         }

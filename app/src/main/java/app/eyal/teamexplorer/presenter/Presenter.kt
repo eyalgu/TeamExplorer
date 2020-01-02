@@ -1,65 +1,35 @@
 package app.eyal.teamexplorer.presenter
 
-import android.view.View
 import androidx.lifecycle.viewModelScope
 import app.eyal.teamexplorer.repository.SlackService
+import app.eyal.teamexplorer.repository.User
 import app.eyal.teamexplorer.repository.UserList
 import app.eyal.teamexplorer.wiring.component
 import com.airbnb.mvrx.BaseMvRxViewModel
 import com.airbnb.mvrx.FragmentViewModelContext
-import com.airbnb.mvrx.MvRxState
 import com.airbnb.mvrx.MvRxViewModelFactory
 import com.airbnb.mvrx.ViewModelContext
+import com.bumptech.glide.Glide
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.lang.Exception
 
-data class UserRowState(
-    val imageUrl: String,
-    val name: String
-)
-
-data class MainState(
-    val loadingIndicatorVisibility: Int = View.GONE,
-    val errorMessageVisibility: Int = View.GONE,
-    val userListVisibility: Int = View.GONE,
-    val errorMessage: String? = null,
-    val userList: List<UserRowState>? = null
-) : MvRxState {
-
-    companion object {
-        val Loading =
-            MainState(loadingIndicatorVisibility = View.VISIBLE)
-
-        fun Error(errorMessage: String) = MainState(
-            errorMessageVisibility = View.VISIBLE,
-            errorMessage = errorMessage
-        )
-
-        fun Data(userList: List<UserRowState>) =
-            MainState(
-                userListVisibility = View.VISIBLE,
-                userList = userList
-            )
-    }
-}
-
-class Presenter(initialState: MainState, slackService: SlackService) :
-    BaseMvRxViewModel<MainState>(initialState = initialState, debugMode = true) {
+class Presenter(initialViewState: MainViewState, slackService: SlackService) :
+    BaseMvRxViewModel<MainViewState>(initialState = initialViewState, debugMode = true) {
 
     class Factory(
         private val slackService: SlackService
     ) {
-        fun create(initialState: MainState): Presenter =
+        fun create(initialViewState: MainViewState): Presenter =
             Presenter(
-                initialState = initialState,
+                initialViewState = initialViewState,
                 slackService = slackService
             )
     }
 
-    companion object : MvRxViewModelFactory<Presenter, MainState> {
-        override fun create(viewModelContext: ViewModelContext, state: MainState): Presenter? {
+    companion object : MvRxViewModelFactory<Presenter, MainViewState> {
+        override fun create(viewModelContext: ViewModelContext, state: MainViewState): Presenter? {
+
             val component = if (viewModelContext is FragmentViewModelContext) {
                 // If the ViewModel has a fragment scope it will be a FragmentViewModelContext, and you can access the fragment.
                 viewModelContext.fragment.component
@@ -70,8 +40,8 @@ class Presenter(initialState: MainState, slackService: SlackService) :
             return component.presenterFactory.create(state)
         }
 
-        override fun initialState(viewModelContext: ViewModelContext): MainState? =
-            MainState.Loading
+        override fun initialState(viewModelContext: ViewModelContext): MainViewState? =
+            MainViewState.Loading
     }
 
     init {
@@ -81,19 +51,23 @@ class Presenter(initialState: MainState, slackService: SlackService) :
                     slackService.userList(SlackService.TOKEN)
                 }
                 setState {
-                    MainState.Data(list.toRowState())
+                    if (list.ok) {
+                        MainViewState.Data(list.members!!.toRowState())
+                    } else {
+                        MainViewState.Error(list.error!!)
+                    }
                 }
             } catch (e: Exception) {
-                setState { MainState.Error(e.message ?: e.javaClass.simpleName) }
+                setState { MainViewState.Error(e.message ?: e.javaClass.simpleName) }
             }
         }
     }
 }
 
-private fun UserList.toRowState() = members.map {
+private fun List<User>.toRowState() = map {
     UserRowState(
-        imageUrl = it.profile.image_192,
-        name = it.profile.display_name
+        imageUrl = it.profile.image_192, // TODO select based on screen size
+        name = it.profile.display_name,
+        id = it.id
     )
 }
-

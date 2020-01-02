@@ -4,8 +4,9 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class UserList(
-    val members: List<User>,
-    val isOk: Boolean?
+    val ok: Boolean,
+    val members: List<User>?,
+    val error: String?
 )
 
 @JsonClass(generateAdapter = true)
