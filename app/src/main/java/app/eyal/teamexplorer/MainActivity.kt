@@ -6,7 +6,9 @@ import android.os.Bundle
 import app.eyal.teamexplorer.ui.MainFragment
 import app.eyal.teamexplorer.wiring.Component
 import app.eyal.teamexplorer.wiring.RealComponent
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@ExperimentalCoroutinesApi
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

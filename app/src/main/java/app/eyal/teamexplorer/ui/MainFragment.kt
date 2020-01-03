@@ -24,7 +24,9 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
 import kotlinx.android.synthetic.main.user_row_item.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@ExperimentalCoroutinesApi
 class MainFragment : BaseMvRxFragment() {
 
     companion object {
@@ -41,7 +43,7 @@ class MainFragment : BaseMvRxFragment() {
         binding = DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false)
         binding.recyclerView.addGlidePreloader(
             Glide.with(this),
-            preloader = glidePreloader { requestManager, epoxyModel: UserRowItemBindingModel_, viewData ->
+            preloader = glidePreloader { requestManager, epoxyModel: UserRowItemBindingModel_, _ ->
                 requestManager.loadImage(epoxyModel.viewState().imageUrl)
             }
         )
@@ -55,12 +57,12 @@ class MainFragment : BaseMvRxFragment() {
                 userRowItem {
                     viewState(it)
                     id(it.id)
-                    onBind  { model , view, position ->
+                    onBind  { _, view, _ ->
                         val binding =  view.dataBinding as UserRowItemBinding
                         Glide.with(this@MainFragment).loadImage(it.imageUrl).into(binding.avatar)
                     }
 
-                    onUnbind { model, view ->
+                    onUnbind { _, view ->
                         val binding =  view.dataBinding as UserRowItemBinding
                         Glide.with(this@MainFragment).clear(binding.avatar)
                     }
@@ -68,10 +70,9 @@ class MainFragment : BaseMvRxFragment() {
             }
         }
     }
-
-
 }
 
+// TODO move to presenter
 fun RequestManager.loadImage(url: String): RequestBuilder<Bitmap> {
 
     val options = RequestOptions
