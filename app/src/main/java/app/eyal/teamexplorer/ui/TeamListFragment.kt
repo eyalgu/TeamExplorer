@@ -8,9 +8,9 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import app.eyal.teamexplorer.R
 import app.eyal.teamexplorer.UserRowItemBindingModel_
-import app.eyal.teamexplorer.databinding.MainFragmentBinding
+import app.eyal.teamexplorer.databinding.TeamListFragmentBinding
 import app.eyal.teamexplorer.databinding.UserRowItemBinding
-import app.eyal.teamexplorer.presenter.Presenter
+import app.eyal.teamexplorer.presenter.TeamListPresenter
 import app.eyal.teamexplorer.userRowItem
 import com.airbnb.epoxy.addGlidePreloader
 import com.airbnb.epoxy.glidePreloader
@@ -22,25 +22,21 @@ import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.signature.ObjectKey
-import kotlinx.android.synthetic.main.user_row_item.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 
 @ExperimentalCoroutinesApi
-class MainFragment : BaseMvRxFragment() {
+@FlowPreview
+class TeamListFragment : BaseMvRxFragment() {
 
-    companion object {
-        fun newInstance() = MainFragment()
-    }
-
-    private val presenter: Presenter by fragmentViewModel()
-    lateinit var binding: MainFragmentBinding
+    private val presenter: TeamListPresenter by fragmentViewModel()
+    lateinit var binding: TeamListFragmentBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.team_list_fragment, container, false)
         binding.recyclerView.addGlidePreloader(
             Glide.with(this),
             preloader = glidePreloader { requestManager, epoxyModel: UserRowItemBindingModel_, _ ->
@@ -56,15 +52,16 @@ class MainFragment : BaseMvRxFragment() {
             state.userList?.forEach {
                 userRowItem {
                     viewState(it)
+                    actionHandler(presenter)
                     id(it.id)
                     onBind  { _, view, _ ->
                         val binding =  view.dataBinding as UserRowItemBinding
-                        Glide.with(this@MainFragment).loadImage(it.imageUrl).into(binding.avatar)
+                        Glide.with(this@TeamListFragment).loadImage(it.imageUrl).into(binding.avatar)
                     }
 
                     onUnbind { _, view ->
                         val binding =  view.dataBinding as UserRowItemBinding
-                        Glide.with(this@MainFragment).clear(binding.avatar)
+                        Glide.with(this@TeamListFragment).clear(binding.avatar)
                     }
                 }
             }

@@ -17,7 +17,8 @@ interface SlackRepository {
         data class Error<T>(val errorMessage: String) : FetchResult<T>()
     }
 
-    fun userList(refresh: Boolean = false): Flow<FetchResult<List<FeedEntity>>>
+    fun userList(): Flow<FetchResult<List<FeedEntity>>>
+    fun user(id: String): Flow<FetchResult<UserEntity>>
 }
 
 @FlowPreview
@@ -26,7 +27,7 @@ class RealSlackRepository(
     private val service: SlackService,
     private val dao: SlackDao
 ) : SlackRepository {
-    override fun userList(refresh: Boolean): Flow<SlackRepository.FetchResult<List<FeedEntity>>> {
+    override fun userList(): Flow<SlackRepository.FetchResult<List<FeedEntity>>> {
 
         val networkFlow = flow<SlackRepository.FetchResult<List<FeedEntity>>> {
             emit(SlackRepository.FetchResult.Loading())
@@ -46,6 +47,36 @@ class RealSlackRepository(
         val diskFlow = flow<SlackRepository.FetchResult<List<FeedEntity>>> {
             emit(SlackRepository.FetchResult.Loading())
             emitAll(dao.loadUserList(20).map { SlackRepository.FetchResult.Data(it) } )
+        }
+
+        return diskFlow.combine(networkFlow) { diskResult, networkResult ->
+            if (networkResult is SlackRepository.FetchResult.Error) {
+                networkResult
+            } else {
+                diskResult
+            }
+        }.distinctUntilChanged()
+    }
+
+    override fun user(id: String): Flow<SlackRepository.FetchResult<UserEntity>> {
+        val networkFlow = flow<SlackRepository.FetchResult<UserEntity>> {
+            emit(SlackRepository.FetchResult.Loading())
+            with(service.userList(SlackService.TOKEN)) {
+                if (ok) {
+                    with(members!!.map { it.toEntity() }) {
+                        dao.insertUserList(this)
+                        // Not emitting here because the value will be sent up via disk flow.
+                    }
+                } else {
+                    dao.clearUserList()
+                    emit(SlackRepository.FetchResult.Error(error!!))
+                }
+            }
+        }
+
+        val diskFlow = flow<SlackRepository.FetchResult<UserEntity>> {
+            emit(SlackRepository.FetchResult.Loading())
+            emitAll(dao.loadUser(id).map { SlackRepository.FetchResult.Data(it) } )
         }
 
         return diskFlow.combine(networkFlow) { diskResult, networkResult ->
