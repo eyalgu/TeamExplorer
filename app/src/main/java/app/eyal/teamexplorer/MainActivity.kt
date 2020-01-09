@@ -2,8 +2,10 @@ package app.eyal.teamexplorer
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import app.eyal.teamexplorer.wiring.Component
-import app.eyal.teamexplorer.wiring.RealComponent
+import androidx.navigation.NavController
+import androidx.navigation.findNavController
+import app.eyal.teamexplorer.wiring.MainActivityComponent
+import app.eyal.teamexplorer.wiring.RealMainActivityComponent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 
@@ -11,11 +13,14 @@ import kotlinx.coroutines.FlowPreview
 @FlowPreview
 class MainActivity : AppCompatActivity() {
 
-    lateinit var component: Component
+    lateinit var mainActivityComponent: MainActivityComponent
+
+    lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mainActivityComponent = RealMainActivityComponent(this)
         setContentView(R.layout.main_activity)
-        component = RealComponent(this)
+        navController = findNavController(R.id.nav_host_fragment)
     }
 }

@@ -9,15 +9,15 @@
             type="app.eyal.teamexplorer.presenter.UserRowState" />
 
         <variable
-            name="actionHandler"
-            type="app.eyal.teamexplorer.presenter.TeamListActionHandler" />
+            name="onClick"
+            type="android.view.View.OnClickListener" />
 
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/row_size"
-        android:onClick="@{() -> actionHandler.performAction(viewState.onClickAction)}">
+        android:onClick="@{onClick}">
 
         <ImageView
             android:id="@+id/avatar"

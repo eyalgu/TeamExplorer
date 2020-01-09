@@ -1,16 +1,20 @@
 package app.eyal.teamexplorer.presenter
 
+import android.graphics.Bitmap
 import android.view.View
 import androidx.lifecycle.viewModelScope
 import app.eyal.teamexplorer.repository.SlackRepository
 import app.eyal.teamexplorer.repository.UserEntity
 import app.eyal.teamexplorer.ui.UserProfileFragment
 import app.eyal.teamexplorer.ui.UserProfileFragmentArgs
+import app.eyal.teamexplorer.ui.loadImage
 import com.airbnb.mvrx.BaseMvRxViewModel
 import com.airbnb.mvrx.FragmentViewModelContext
 import com.airbnb.mvrx.MvRxState
 import com.airbnb.mvrx.MvRxViewModelFactory
 import com.airbnb.mvrx.ViewModelContext
+import com.bumptech.glide.RequestBuilder
+import com.bumptech.glide.RequestManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -20,7 +24,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-data class ProfileDetailsState(val name: String, val status: String, val profilePictureUrl: String)
+data class ProfileDetailsState(val name: String, val status: String, val profilePicture: RequestBuilder<Bitmap>)
 
 data class UserProfileViewState(
     val loadingIndicatorVisibility: Int = View.GONE,
@@ -51,18 +55,21 @@ data class UserProfileViewState(
 class UserProfilePresenter(
     initialViewState: UserProfileViewState,
     private val slackRepository: SlackRepository,
-    private val args: UserProfileFragmentArgs
+    private val args: UserProfileFragmentArgs,
+    private val glide: RequestManager
 ) :
     BaseMvRxViewModel<UserProfileViewState>(initialState = initialViewState, debugMode = true) {
 
     class Factory(
         private val slackRepository: SlackRepository,
-        private val args: UserProfileFragmentArgs
+        private val args: UserProfileFragmentArgs,
+        private val glide: RequestManager
     ) {
         fun create(initialViewState: UserProfileViewState) = UserProfilePresenter(
             initialViewState = initialViewState,
             slackRepository = slackRepository,
-            args = args
+            args = args,
+            glide = glide
         )
     }
 
@@ -71,7 +78,7 @@ class UserProfilePresenter(
             viewModelContext: ViewModelContext,
             state: UserProfileViewState
         ): UserProfilePresenter? {
-            return viewModelContext.userProfileFragment.userComponent.userProfilePresenterFactory.create(
+            return viewModelContext.userProfileFragment.component.presenterFactory.create(
                 state
             )
         }
@@ -98,11 +105,11 @@ class UserProfilePresenter(
                 .collect()
         }
     }
+
+    private fun UserEntity.toUserProfileViewState() = ProfileDetailsState(
+        name = display_name,
+        profilePicture = glide.loadImage(image_192),
+        status = status_text
+
+    )
 }
-
-private fun UserEntity.toUserProfileViewState() = ProfileDetailsState(
-    name = display_name,
-    profilePictureUrl = image_192,
-    status = status_text
-
-)

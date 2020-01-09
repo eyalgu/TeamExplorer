@@ -1,17 +1,22 @@
 package app.eyal.teamexplorer.presenter
 
+import android.graphics.Bitmap
 import android.view.View
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import app.eyal.teamexplorer.MainActivity
+import androidx.navigation.fragment.findNavController
 import app.eyal.teamexplorer.repository.FeedEntity
 import app.eyal.teamexplorer.repository.SlackRepository
+import app.eyal.teamexplorer.ui.TeamListFragment
 import app.eyal.teamexplorer.ui.TeamListFragmentDirections
-import app.eyal.teamexplorer.wiring.Component
+import app.eyal.teamexplorer.ui.loadImage
 import com.airbnb.mvrx.BaseMvRxViewModel
+import com.airbnb.mvrx.FragmentViewModelContext
 import com.airbnb.mvrx.MvRxState
 import com.airbnb.mvrx.MvRxViewModelFactory
 import com.airbnb.mvrx.ViewModelContext
+import com.bumptech.glide.RequestBuilder
+import com.bumptech.glide.RequestManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -23,6 +28,7 @@ import kotlinx.coroutines.launch
 
 data class UserRowState(
     val imageUrl: String,
+    // val request: RequestBuilder<Bitmap>,
     val name: String,
     val id: String
 ) {
@@ -58,41 +64,39 @@ sealed class TeamListAction {
     data class UserRowClicked(val userId: String): TeamListAction()
 }
 
-interface TeamListActionHandler {
-    fun performAction(action: TeamListAction)
-}
-
 @ExperimentalCoroutinesApi
 @FlowPreview
 class TeamListPresenter(
     initialViewState: TeamListViewState,
     slackRepository: SlackRepository,
-    private val navController: NavController) :
-    TeamListActionHandler,
+    private val navController: NavController,
+    private val glide: RequestManager) :
     BaseMvRxViewModel<TeamListViewState>(initialState = initialViewState, debugMode = true) {
 
     class Factory(
         private val slackRepository: SlackRepository,
-        private val navController: NavController
+        private val glide: RequestManager
     ) {
-        fun create(initialViewState: TeamListViewState): TeamListPresenter =
+        fun create(initialViewState: TeamListViewState, navController: NavController): TeamListPresenter =
             TeamListPresenter(
                 initialViewState = initialViewState,
                 slackRepository = slackRepository,
-                navController = navController
+                navController = navController,
+                glide = glide
             )
     }
 
     companion object : MvRxViewModelFactory<TeamListPresenter, TeamListViewState> {
         override fun create(viewModelContext: ViewModelContext, state: TeamListViewState): TeamListPresenter? {
-            return viewModelContext.component.teamListPresenterFactory.create(state)
+            return viewModelContext.teamListFragment.component.presenterFactory.create(state, viewModelContext.teamListFragment.findNavController())
         }
 
         override fun initialState(viewModelContext: ViewModelContext): TeamListViewState? =
             TeamListViewState.Loading
 
-        private val ViewModelContext.component: Component
-            get() = (activity as MainActivity).component
+        private val ViewModelContext.teamListFragment
+            get() = (this as FragmentViewModelContext).fragment as TeamListFragment
+
     }
 
     init {
@@ -111,16 +115,17 @@ class TeamListPresenter(
         }
     }
 
-    override fun performAction(action: TeamListAction): Unit = when(action) {
+    private fun FeedEntity.toRowState() = UserRowState(
+        imageUrl = imageUrl, // TODO select based on screen size
+        name = displayName,
+        id = userId
+    )
+
+
+    fun performAction(action: TeamListAction): Unit = when(action) {
         is TeamListAction.UserRowClicked -> {
             navController.navigate(TeamListFragmentDirections.actionTeamListFragmentToUserProfileFragment(action.userId))
         }
 
     }
 }
-
-private fun FeedEntity.toRowState() = UserRowState(
-    imageUrl = imageUrl, // TODO select based on screen size
-    name = displayName,
-    id = userId
-)
