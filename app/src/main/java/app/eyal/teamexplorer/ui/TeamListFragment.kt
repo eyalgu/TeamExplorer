@@ -4,15 +4,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import androidx.core.view.doOnPreDraw
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
+import androidx.transition.TransitionInflater
 import app.eyal.teamexplorer.MainActivity
 import app.eyal.teamexplorer.R
 import app.eyal.teamexplorer.UserRowItemBindingModel_
 import app.eyal.teamexplorer.databinding.TeamListFragmentBinding
 import app.eyal.teamexplorer.databinding.UserRowItemBinding
 import app.eyal.teamexplorer.presenter.TeamListPresenter
+import app.eyal.teamexplorer.presenter.UserProfileViewState
 import app.eyal.teamexplorer.userRowItem
 import app.eyal.teamexplorer.wiring.RealTeamListFragmentComponent
 import app.eyal.teamexplorer.wiring.TeamListFragmentComponent
@@ -49,7 +54,7 @@ class TeamListFragment : BaseFragment<TeamListPresenter>() {
         savedInstanceState: Bundle?
     ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.team_list_fragment, container, false)
-
+        sharedElementReturnTransition = TransitionInflater.from(context).inflateTransition(android.R.transition.move)
         binding.recyclerView.addGlidePreloader(
             glide,
             preloader = glidePreloader { requestManager, epoxyModel: UserRowItemBindingModel_, _ ->
@@ -63,13 +68,30 @@ class TeamListFragment : BaseFragment<TeamListPresenter>() {
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        postponeEnterTransition()
+        binding.recyclerView.doOnPreDraw {
+            startPostponedEnterTransition()
+        }
+        invalidate()
+    }
+
     override fun invalidate() = withState(presenter) { state ->
         binding.viewState = state
         binding.recyclerView.withModels {
             state.userList?.forEach {
                 userRowItem {
                     viewState(it)
-                    onClick { _ -> presenter.performAction(it.onClickAction) }
+                    onClick { v ->
+                        val extras = FragmentNavigatorExtras(
+                            v.findViewById<ImageView>(R.id.avatar) to it.imageUrl)
+                        val action = TeamListFragmentDirections.actionTeamListFragmentToUserProfileFragment(
+                            UserProfileViewState(it.name, it.id, it.imageUrl)
+                        )
+                        findNavController().navigate(action, extras)
+                        // presenter.performAction(it.onClickAction)
+                    }
                     id(it.id)
                     onBind  { _, view, _ ->
                         val binding =  view.dataBinding as UserRowItemBinding

@@ -1,20 +1,18 @@
 package app.eyal.teamexplorer.presenter
 
-import android.graphics.Bitmap
+import android.os.Parcelable
 import android.view.View
 import androidx.lifecycle.viewModelScope
 import app.eyal.teamexplorer.repository.SlackRepository
 import app.eyal.teamexplorer.repository.UserEntity
 import app.eyal.teamexplorer.ui.UserProfileFragment
 import app.eyal.teamexplorer.ui.UserProfileFragmentArgs
-import app.eyal.teamexplorer.ui.loadImage
-import com.airbnb.mvrx.BaseMvRxViewModel
 import com.airbnb.mvrx.FragmentViewModelContext
 import com.airbnb.mvrx.MvRxState
 import com.airbnb.mvrx.MvRxViewModelFactory
 import com.airbnb.mvrx.ViewModelContext
-import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.RequestManager
+import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -24,39 +22,19 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-data class ProfileDetailsState(val name: String, val status: String, val profilePictureUrl: String)
-
+@Parcelize
 data class UserProfileViewState(
-    val loadingIndicatorVisibility: Int = View.GONE,
-    val errorMessageVisibility: Int = View.GONE,
-    val userProfileVisibility: Int = View.GONE,
-    val errorMessage: String? = null,
-    val profileDetailsState: ProfileDetailsState? = null
-) : MvRxState {
-    companion object {
-        val Loading =
-            UserProfileViewState(loadingIndicatorVisibility = View.VISIBLE)
-
-        fun Error(errorMessage: String) = UserProfileViewState(
-            errorMessageVisibility = View.VISIBLE,
-            errorMessage = errorMessage
-        )
-
-        fun Data(profileDetailsState: ProfileDetailsState) =
-            UserProfileViewState(
-                userProfileVisibility = View.VISIBLE,
-                profileDetailsState = profileDetailsState
-            )
-    }
-}
+    val name: String,
+    val status: String,
+    val profilePictureUrl: String
+): MvRxState, Parcelable
 
 @ExperimentalCoroutinesApi
 @FlowPreview
 class UserProfilePresenter(
     initialViewState: UserProfileViewState,
     private val slackRepository: SlackRepository,
-    private val args: UserProfileFragmentArgs,
-    private val glide: RequestManager
+    private val args: UserProfileFragmentArgs
 ) :
     BasePresenter<UserProfileViewState>(initialState = initialViewState, debugMode = true) {
 
@@ -68,8 +46,7 @@ class UserProfilePresenter(
         fun create(initialViewState: UserProfileViewState) = UserProfilePresenter(
             initialViewState = initialViewState,
             slackRepository = slackRepository,
-            args = args,
-            glide = glide
+            args = args
         )
     }
 
@@ -84,32 +61,10 @@ class UserProfilePresenter(
         }
 
         override fun initialState(viewModelContext: ViewModelContext): UserProfileViewState? =
-            UserProfileViewState.Loading
+            viewModelContext.userProfileFragment.args.user
 
         private val ViewModelContext.userProfileFragment
             get() = (this as FragmentViewModelContext).fragment as UserProfileFragment
     }
 
-    init {
-        viewModelScope.launch {
-            slackRepository.user(args.userId)
-                .flowOn(Dispatchers.IO)
-                .map {
-                    when (it) {
-                        is SlackRepository.FetchResult.Loading -> UserProfileViewState.Loading
-                        is SlackRepository.FetchResult.Error -> UserProfileViewState.Error(it.errorMessage)
-                        is SlackRepository.FetchResult.Data -> UserProfileViewState.Data(it.value.toUserProfileViewState())
-                    }
-                }.onEach { setState { it } }
-                // .catch { setState { MainViewState.Error(it.message ?: it.javaClass.simpleName) } }
-                .collect()
-        }
-    }
-
-    private fun UserEntity.toUserProfileViewState() = ProfileDetailsState(
-        name = display_name,
-        profilePictureUrl = image_192,
-        status = status_text
-
-    )
 }

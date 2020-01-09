@@ -111,11 +111,11 @@ class TeamListPresenter(
 
     fun performAction(action: TeamListAction): Unit = when (action) {
         is TeamListAction.UserRowClicked -> {
-            nextDestinations(
-                TeamListFragmentDirections.actionTeamListFragmentToUserProfileFragment(
-                    action.userId
-                )
-            )
+            // nextDestinations(
+            //     TeamListFragmentDirections.actionTeamListFragmentToUserProfileFragment(
+            //         action.userId
+            //     )
+            // )
         }
     }
 }
