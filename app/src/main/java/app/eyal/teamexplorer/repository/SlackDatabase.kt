@@ -83,7 +83,7 @@ abstract class SlackDao {
     abstract fun loadUserList(limit: Int): Flow<List<FeedEntity>>
 
     @Query("SELECT * FROM UserEntity WHERE id=:userId LIMIT 1")
-    abstract fun loadUser(userId: String): Flow<UserEntity>
+    abstract fun loadUser(userId: String): Flow<UserEntity?>
 
 }
 

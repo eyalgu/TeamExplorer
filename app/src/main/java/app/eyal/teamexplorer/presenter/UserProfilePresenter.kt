@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-data class ProfileDetailsState(val name: String, val status: String, val profilePicture: RequestBuilder<Bitmap>)
+data class ProfileDetailsState(val name: String, val status: String, val profilePictureUrl: String)
 
 data class UserProfileViewState(
     val loadingIndicatorVisibility: Int = View.GONE,
@@ -108,7 +108,7 @@ class UserProfilePresenter(
 
     private fun UserEntity.toUserProfileViewState() = ProfileDetailsState(
         name = display_name,
-        profilePicture = glide.loadImage(image_192),
+        profilePictureUrl = image_192,
         status = status_text
 
     )

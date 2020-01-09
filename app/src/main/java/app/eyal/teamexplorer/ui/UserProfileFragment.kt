@@ -50,7 +50,7 @@ class UserProfileFragment : BaseMvRxFragment() {
         binding.viewState = state
         // TODO image loading logic to presenter
         if (state.profileDetailsState != null ) {
-            state.profileDetailsState.profilePicture
+            component.glide.loadImage(state.profileDetailsState.profilePictureUrl)
                 .into(binding.profilePicture)
         } else {
             component.glide.clear(binding.profilePicture)

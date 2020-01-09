@@ -61,7 +61,7 @@ data class TeamListViewState(
 }
 
 sealed class TeamListAction {
-    data class UserRowClicked(val userId: String): TeamListAction()
+    data class UserRowClicked(val userId: String) : TeamListAction()
 }
 
 @ExperimentalCoroutinesApi
@@ -69,26 +69,31 @@ sealed class TeamListAction {
 class TeamListPresenter(
     initialViewState: TeamListViewState,
     slackRepository: SlackRepository,
-    private val navController: NavController,
-    private val glide: RequestManager) :
+    // private val navController: NavController,
+    private val glide: RequestManager
+) :
     BaseMvRxViewModel<TeamListViewState>(initialState = initialViewState, debugMode = true) {
 
     class Factory(
         private val slackRepository: SlackRepository,
         private val glide: RequestManager
     ) {
-        fun create(initialViewState: TeamListViewState, navController: NavController): TeamListPresenter =
+        fun create(initialViewState: TeamListViewState):
+            TeamListPresenter =
             TeamListPresenter(
                 initialViewState = initialViewState,
                 slackRepository = slackRepository,
-                navController = navController,
+                // navController = navController,
                 glide = glide
             )
     }
 
     companion object : MvRxViewModelFactory<TeamListPresenter, TeamListViewState> {
-        override fun create(viewModelContext: ViewModelContext, state: TeamListViewState): TeamListPresenter? {
-            return viewModelContext.teamListFragment.component.presenterFactory.create(state, viewModelContext.teamListFragment.findNavController())
+        override fun create(
+            viewModelContext: ViewModelContext,
+            state: TeamListViewState
+        ): TeamListPresenter? = with(viewModelContext.teamListFragment) {
+            component.presenterFactory.create(state)
         }
 
         override fun initialState(viewModelContext: ViewModelContext): TeamListViewState? =
@@ -96,7 +101,6 @@ class TeamListPresenter(
 
         private val ViewModelContext.teamListFragment
             get() = (this as FragmentViewModelContext).fragment as TeamListFragment
-
     }
 
     init {
@@ -107,7 +111,7 @@ class TeamListPresenter(
                     when (it) {
                         is SlackRepository.FetchResult.Loading -> TeamListViewState.Loading
                         is SlackRepository.FetchResult.Error -> TeamListViewState.Error(it.errorMessage)
-                        is SlackRepository.FetchResult.Data -> TeamListViewState.Data(it.value.map { it.toRowState()})
+                        is SlackRepository.FetchResult.Data -> TeamListViewState.Data(it.value.map { it.toRowState() })
                     }
                 }.onEach { setState { it } }
                 // .catch { setState { MainViewState.Error(it.message ?: it.javaClass.simpleName) } }
@@ -121,10 +125,13 @@ class TeamListPresenter(
         id = userId
     )
 
-
-    fun performAction(action: TeamListAction): Unit = when(action) {
+    fun performAction(action: TeamListAction, navController: NavController): Unit = when (action) {
         is TeamListAction.UserRowClicked -> {
-            navController.navigate(TeamListFragmentDirections.actionTeamListFragmentToUserProfileFragment(action.userId))
+            navController.navigate(
+                TeamListFragmentDirections.actionTeamListFragmentToUserProfileFragment(
+                    action.userId
+                )
+            )
         }
 
     }

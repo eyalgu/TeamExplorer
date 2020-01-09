@@ -6,15 +6,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 interface SlackRepository {
 
-    sealed class FetchResult<T> {
-        class Loading<T> : FetchResult<T>()
-        data class Data<T>(val value: T) : FetchResult<T>()
-        data class Error<T>(val errorMessage: String) : FetchResult<T>()
+    sealed class FetchResult<T: Any> {
+        class Loading<T: Any> : FetchResult<T>()
+        data class Data<T: Any>(val value: T) : FetchResult<T>()
+        data class Error<T: Any>(val errorMessage: String) : FetchResult<T>()
     }
 
     fun userList(): Flow<FetchResult<List<FeedEntity>>>
@@ -76,7 +77,7 @@ class RealSlackRepository(
 
         val diskFlow = flow<SlackRepository.FetchResult<UserEntity>> {
             emit(SlackRepository.FetchResult.Loading())
-            emitAll(dao.loadUser(id).map { SlackRepository.FetchResult.Data(it) } )
+            emitAll(dao.loadUser(id).filterNotNull().map { SlackRepository.FetchResult.Data(it) } )
         }
 
         return diskFlow.combine(networkFlow) { diskResult, networkResult ->

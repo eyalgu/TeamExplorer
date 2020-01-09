@@ -66,7 +66,7 @@ class TeamListFragment : BaseMvRxFragment() {
             state.userList?.forEach {
                 userRowItem {
                     viewState(it)
-                    onClick { _ -> presenter.performAction(it.onClickAction) }
+                    onClick { _ -> presenter.performAction(it.onClickAction, findNavController()) }
                     id(it.id)
                     onBind  { _, view, _ ->
                         val binding =  view.dataBinding as UserRowItemBinding
