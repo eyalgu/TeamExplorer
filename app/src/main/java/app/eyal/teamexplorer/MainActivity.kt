@@ -15,12 +15,9 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var mainActivityComponent: MainActivityComponent
 
-    lateinit var navController: NavController
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainActivityComponent = RealMainActivityComponent(this)
         setContentView(R.layout.main_activity)
-        navController = findNavController(R.id.nav_host_fragment)
     }
 }

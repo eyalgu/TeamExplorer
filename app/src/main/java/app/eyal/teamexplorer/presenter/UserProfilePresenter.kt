@@ -58,7 +58,7 @@ class UserProfilePresenter(
     private val args: UserProfileFragmentArgs,
     private val glide: RequestManager
 ) :
-    BaseMvRxViewModel<UserProfileViewState>(initialState = initialViewState, debugMode = true) {
+    BasePresenter<UserProfileViewState>(initialState = initialViewState, debugMode = true) {
 
     class Factory(
         private val slackRepository: SlackRepository,

@@ -21,13 +21,21 @@ import kotlinx.coroutines.FlowPreview
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-class UserProfileFragment : BaseMvRxFragment() {
+class UserProfileFragment : BaseFragment<UserProfilePresenter>() {
 
     val args: UserProfileFragmentArgs by navArgs()
     lateinit var component: UserFragmentComponent
 
-    private val presenter: UserProfilePresenter by fragmentViewModel()
+    override val presenter: UserProfilePresenter by fragmentViewModel()
     lateinit var binding: UserProfileFragmentBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        component = RealUserFragmentComponent(
+            mainActivityComponent = (activity!! as MainActivity).mainActivityComponent,
+            fragment = this
+        )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,14 +44,6 @@ class UserProfileFragment : BaseMvRxFragment() {
         binding =
             DataBindingUtil.inflate(inflater, R.layout.user_profile_fragment, container, false)
         return binding.root
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        component = RealUserFragmentComponent(
-            mainActivityComponent = (activity!! as MainActivity).mainActivityComponent,
-            fragment = this
-        )
     }
 
     override fun invalidate(): Unit = withState(presenter) { state ->

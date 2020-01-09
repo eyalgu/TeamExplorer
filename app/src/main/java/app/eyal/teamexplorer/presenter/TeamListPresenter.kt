@@ -1,22 +1,15 @@
 package app.eyal.teamexplorer.presenter
 
-import android.graphics.Bitmap
 import android.view.View
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
-import androidx.navigation.fragment.findNavController
 import app.eyal.teamexplorer.repository.FeedEntity
 import app.eyal.teamexplorer.repository.SlackRepository
 import app.eyal.teamexplorer.ui.TeamListFragment
 import app.eyal.teamexplorer.ui.TeamListFragmentDirections
-import app.eyal.teamexplorer.ui.loadImage
-import com.airbnb.mvrx.BaseMvRxViewModel
 import com.airbnb.mvrx.FragmentViewModelContext
 import com.airbnb.mvrx.MvRxState
 import com.airbnb.mvrx.MvRxViewModelFactory
 import com.airbnb.mvrx.ViewModelContext
-import com.bumptech.glide.RequestBuilder
-import com.bumptech.glide.RequestManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -28,7 +21,6 @@ import kotlinx.coroutines.launch
 
 data class UserRowState(
     val imageUrl: String,
-    // val request: RequestBuilder<Bitmap>,
     val name: String,
     val id: String
 ) {
@@ -68,23 +60,15 @@ sealed class TeamListAction {
 @FlowPreview
 class TeamListPresenter(
     initialViewState: TeamListViewState,
-    slackRepository: SlackRepository,
-    // private val navController: NavController,
-    private val glide: RequestManager
-) :
-    BaseMvRxViewModel<TeamListViewState>(initialState = initialViewState, debugMode = true) {
+    slackRepository: SlackRepository
+) : BasePresenter<TeamListViewState>(initialState = initialViewState, debugMode = true) {
 
-    class Factory(
-        private val slackRepository: SlackRepository,
-        private val glide: RequestManager
-    ) {
+    class Factory(private val slackRepository: SlackRepository) {
         fun create(initialViewState: TeamListViewState):
             TeamListPresenter =
             TeamListPresenter(
                 initialViewState = initialViewState,
-                slackRepository = slackRepository,
-                // navController = navController,
-                glide = glide
+                slackRepository = slackRepository
             )
     }
 
@@ -125,14 +109,13 @@ class TeamListPresenter(
         id = userId
     )
 
-    fun performAction(action: TeamListAction, navController: NavController): Unit = when (action) {
+    fun performAction(action: TeamListAction): Unit = when (action) {
         is TeamListAction.UserRowClicked -> {
-            navController.navigate(
+            nextDestinations(
                 TeamListFragmentDirections.actionTeamListFragmentToUserProfileFragment(
                     action.userId
                 )
             )
         }
-
     }
 }

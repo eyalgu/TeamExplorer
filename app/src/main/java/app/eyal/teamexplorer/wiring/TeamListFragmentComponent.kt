@@ -1,6 +1,5 @@
 package app.eyal.teamexplorer.wiring
 
-import androidx.navigation.NavController
 import app.eyal.teamexplorer.presenter.TeamListPresenter
 import app.eyal.teamexplorer.ui.TeamListFragment
 import com.bumptech.glide.Glide
@@ -18,7 +17,7 @@ interface TeamListFragmentComponent {
 @ExperimentalCoroutinesApi
 @FlowPreview
 internal class RealTeamListFragmentComponent(
-    private val activityComponent: MainActivityComponent,
+    activityComponent: MainActivityComponent,
     fragment: TeamListFragment) :
     TeamListFragmentComponent {
 
@@ -26,7 +25,6 @@ internal class RealTeamListFragmentComponent(
 
     override val presenterFactory: TeamListPresenter.Factory =
         TeamListPresenter.Factory(
-            activityComponent.slackRepository,
-            glide
+            activityComponent.slackRepository
         )
 }
