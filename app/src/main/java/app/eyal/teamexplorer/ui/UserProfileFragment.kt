@@ -13,6 +13,7 @@ import androidx.transition.TransitionInflater
 import app.eyal.teamexplorer.MainActivity
 import app.eyal.teamexplorer.R
 import app.eyal.teamexplorer.databinding.UserProfileFragmentBinding
+import app.eyal.teamexplorer.presenter.UserProfileDetailsState
 import app.eyal.teamexplorer.presenter.UserProfilePresenter
 import app.eyal.teamexplorer.wiring.RealUserFragmentComponent
 import app.eyal.teamexplorer.wiring.UserFragmentComponent
@@ -54,7 +55,6 @@ class UserProfileFragment : BaseFragment<UserProfilePresenter>() {
         postponeEnterTransition()
         binding =
             DataBindingUtil.inflate(inflater, R.layout.user_profile_fragment, container, false)
-        binding.viewState = args.user
 
         return binding.root
     }
@@ -72,8 +72,13 @@ class UserProfileFragment : BaseFragment<UserProfilePresenter>() {
                 return false
             }
         }
-        component.glide.loadImage(state.profilePictureUrl)
-            .listener(listener)
-            .into(binding.profilePicture)
+        if (state.userProfileDetailsState != UserProfileDetailsState.Empty) {
+            component.glide.loadImage(state.userProfileDetailsState.profilePictureUrl)
+                .listener(listener)
+                .into(binding.profilePicture)
+
+        } else {
+            component.glide.clear(binding.profilePicture)
+        }
     }
 }

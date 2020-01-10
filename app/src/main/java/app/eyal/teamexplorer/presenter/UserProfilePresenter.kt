@@ -1,6 +1,5 @@
 package app.eyal.teamexplorer.presenter
 
-import android.os.Parcelable
 import android.view.View
 import androidx.lifecycle.viewModelScope
 import app.eyal.teamexplorer.repository.SlackRepository
@@ -12,22 +11,43 @@ import com.airbnb.mvrx.MvRxState
 import com.airbnb.mvrx.MvRxViewModelFactory
 import com.airbnb.mvrx.ViewModelContext
 import com.bumptech.glide.RequestManager
-import kotlinx.android.parcel.Parcelize
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-@Parcelize
+data class UserProfileDetailsState(
+    val name: String = "",
+    val status: String = "",
+    val profilePictureUrl: String = ""
+) {
+    companion object {
+        val Empty = UserProfileDetailsState()
+    }
+}
+
 data class UserProfileViewState(
-    val name: String,
-    val status: String,
-    val profilePictureUrl: String
-): MvRxState, Parcelable
+    val userProfileDetailsVisibility: Int = View.GONE,
+    val loadingIndicatorVisibility: Int = View.GONE,
+    val errorMessageVisibility: Int = View.GONE,
+    val errorMessage: String = "",
+    val userProfileDetailsState: UserProfileDetailsState = UserProfileDetailsState.Empty
+): MvRxState {
+    companion object {
+        val Loading = UserProfileViewState(loadingIndicatorVisibility = View.VISIBLE)
+        fun Error(errorMessage: String) = UserProfileViewState(
+            errorMessageVisibility = View.VISIBLE,
+            errorMessage = errorMessage
+        )
+        fun Data(userProfileDetailsState: UserProfileDetailsState) = UserProfileViewState(
+            userProfileDetailsVisibility = View.VISIBLE,
+            userProfileDetailsState = userProfileDetailsState
+        )
+
+    }
+}
 
 @ExperimentalCoroutinesApi
 @FlowPreview
@@ -61,10 +81,31 @@ class UserProfilePresenter(
         }
 
         override fun initialState(viewModelContext: ViewModelContext): UserProfileViewState? =
-            viewModelContext.userProfileFragment.args.user
+            UserProfileViewState.Loading
 
         private val ViewModelContext.userProfileFragment
             get() = (this as FragmentViewModelContext).fragment as UserProfileFragment
     }
 
+    init {
+        viewModelScope.launch {
+            slackRepository.user(args.userId)
+                .map {
+                    when(it) {
+                        is SlackRepository.FetchResult.Loading -> UserProfileViewState.Loading
+                        is SlackRepository.FetchResult.Error -> UserProfileViewState.Error(it.errorMessage)
+                        is SlackRepository.FetchResult.Data<UserEntity> -> UserProfileViewState.Data(it.value.toUserProfileDetailsState())
+                    }
+                }
+                .onEach { setState { it } }
+                .collect()
+        }
+    }
+
 }
+
+fun UserEntity.toUserProfileDetailsState() = UserProfileDetailsState(
+    name = display_name,
+    status = status_text,
+    profilePictureUrl = image_192
+)

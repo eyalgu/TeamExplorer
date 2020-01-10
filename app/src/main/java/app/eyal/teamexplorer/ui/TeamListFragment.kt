@@ -61,9 +61,9 @@ class TeamListFragment : BaseFragment<TeamListPresenter>() {
                 requestManager.loadImage(epoxyModel.viewState().imageUrl)
             }
         )
-        viewLifecycleOwner.lifecycleScope.launch {
-            findNavController().navigate(presenter.navDirections.receive())
-        }
+        // viewLifecycleOwner.lifecycleScope.launch {
+        //     findNavController().navigate(presenter.navDirections.receive())
+        // }
 
         return binding.root
     }
@@ -86,11 +86,7 @@ class TeamListFragment : BaseFragment<TeamListPresenter>() {
                     onClick { v ->
                         val extras = FragmentNavigatorExtras(
                             v.findViewById<ImageView>(R.id.avatar) to it.imageUrl)
-                        val action = TeamListFragmentDirections.actionTeamListFragmentToUserProfileFragment(
-                            UserProfileViewState(it.name, it.id, it.imageUrl)
-                        )
-                        findNavController().navigate(action, extras)
-                        // presenter.performAction(it.onClickAction)
+                        presenter.performAction(it.onClickActionBuilder, extras)
                     }
                     id(it.id)
                     onBind  { _, view, _ ->

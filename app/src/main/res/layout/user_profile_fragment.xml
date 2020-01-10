@@ -15,12 +15,37 @@
         android:layout_height="match_parent"
         tools:context="ui.UserProfileFragment">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{viewState.errorMessage}"
+            android:visibility="@{viewState.errorMessageVisibility}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.3"
+            tools:text="Error message" />
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="@{viewState.loadingIndicatorVisibility}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.3"/>
+
+
+
         <ImageView
             android:id="@+id/profile_picture"
             android:layout_width="@dimen/avatar_size"
             android:layout_height="@dimen/avatar_size"
             android:contentDescription="@string/profile_picture_description"
-            android:transitionName="@{viewState.profilePictureUrl}"
+            android:visibility="@{viewState.userProfileDetailsVisibility}"
+            android:transitionName="@{viewState.userProfileDetailsState.profilePictureUrl}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -30,7 +55,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
-            android:text="@{viewState.name}"
+            android:visibility="@{viewState.userProfileDetailsVisibility}"
+            android:text="@{viewState.userProfileDetailsState.name}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/profile_picture"
@@ -41,7 +67,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
-            android:text="@{viewState.status}"
+            android:visibility="@{viewState.userProfileDetailsVisibility}"
+            android:text="@{viewState.userProfileDetailsState.status}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/display_name" />

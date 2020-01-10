@@ -2,6 +2,7 @@ package app.eyal.teamexplorer.presenter
 
 import android.view.View
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.fragment.FragmentNavigator
 import app.eyal.teamexplorer.repository.FeedEntity
 import app.eyal.teamexplorer.repository.SlackRepository
 import app.eyal.teamexplorer.ui.TeamListFragment
@@ -24,7 +25,7 @@ data class UserRowState(
     val name: String,
     val id: String
 ) {
-    val onClickAction: TeamListAction = TeamListAction.UserRowClicked(id)
+    val onClickActionBuilder: TeamListActionBuilder = TeamListActionBuilder(id)
 }
 
 data class TeamListViewState(
@@ -53,7 +54,14 @@ data class TeamListViewState(
 }
 
 sealed class TeamListAction {
-    data class UserRowClicked(val userId: String) : TeamListAction()
+    data class UserRowClicked(val userId: String, override val args: FragmentNavigator.Extras?) :
+        TeamListAction()
+
+    abstract val args: FragmentNavigator.Extras?
+}
+
+class TeamListActionBuilder(private val userId: String) {
+    fun buildAction(args: FragmentNavigator.Extras?) = TeamListAction.UserRowClicked(userId, args)
 }
 
 @ExperimentalCoroutinesApi
@@ -109,13 +117,18 @@ class TeamListPresenter(
         id = userId
     )
 
-    fun performAction(action: TeamListAction): Unit = when (action) {
-        is TeamListAction.UserRowClicked -> {
-            // nextDestinations(
-            //     TeamListFragmentDirections.actionTeamListFragmentToUserProfileFragment(
-            //         action.userId
-            //     )
-            // )
+    fun performAction(actionBuilder: TeamListActionBuilder, args: FragmentNavigator.Extras?): Unit =
+        with(actionBuilder.buildAction(args)) {
+            when (this) {
+                is TeamListAction.UserRowClicked -> {
+                    nextDestinations(
+                        TeamListFragmentDirections.actionTeamListFragmentToUserProfileFragment(
+                            userId
+                        ),
+                        this.args
+                    )
+                }
+            }
         }
-    }
-}
+        }
+
