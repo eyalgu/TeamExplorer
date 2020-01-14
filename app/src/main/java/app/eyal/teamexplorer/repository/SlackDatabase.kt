@@ -1,5 +1,6 @@
 package app.eyal.teamexplorer.repository
 
+import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -79,8 +80,8 @@ abstract class SlackDao {
     @Query("DELETE FROM UserEntity WHERE id NOT IN (SELECT DISTINCT(userId) FROM FeedEntity)")
     protected abstract suspend fun clearObseleteUsers()
 
-    @Query("SELECT * FROM FeedEntity ORDER BY FeedEntity.feedOrder ASC LIMIT :limit")
-    abstract fun loadUserList(limit: Int): Flow<List<FeedEntity>>
+    @Query("SELECT * FROM FeedEntity ORDER BY FeedEntity.feedOrder ASC")
+    abstract fun loadUserList(): DataSource.Factory<Int, FeedEntity>
 
     @Query("SELECT * FROM UserEntity WHERE id=:userId LIMIT 1")
     abstract fun loadUser(userId: String): Flow<UserEntity?>

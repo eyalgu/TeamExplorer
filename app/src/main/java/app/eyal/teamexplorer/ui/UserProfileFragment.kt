@@ -31,13 +31,12 @@ import java.util.concurrent.TimeUnit
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-class UserProfileFragment : BaseFragment<UserProfilePresenter>() {
+class UserProfileFragment : BaseFragment<UserProfilePresenter, UserProfileFragmentBinding>() {
 
     val args: UserProfileFragmentArgs by navArgs()
     lateinit var component: UserFragmentComponent
 
     override val presenter: UserProfilePresenter by fragmentViewModel()
-    lateinit var binding: UserProfileFragmentBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

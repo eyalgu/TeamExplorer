@@ -3,6 +3,8 @@ package app.eyal.teamexplorer.presenter
 import android.view.View
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.FragmentNavigator
+import androidx.paging.DataSource
+import androidx.paging.PagedList
 import app.eyal.teamexplorer.repository.FeedEntity
 import app.eyal.teamexplorer.repository.SlackRepository
 import app.eyal.teamexplorer.ui.TeamListFragment
@@ -33,7 +35,7 @@ data class TeamListViewState(
     val errorMessageVisibility: Int = View.GONE,
     val userListVisibility: Int = View.GONE,
     val errorMessage: String? = null,
-    val userList: List<UserRowState>? = null
+    val userList: PagedList<UserRowState>? = null
 ) : MvRxState {
 
     companion object {
@@ -45,7 +47,7 @@ data class TeamListViewState(
             errorMessage = errorMessage
         )
 
-        fun Data(userList: List<UserRowState>) =
+        fun Data(userList: PagedList<UserRowState>) =
             TeamListViewState(
                 userListVisibility = View.VISIBLE,
                 userList = userList
@@ -97,13 +99,13 @@ class TeamListPresenter(
 
     init {
         viewModelScope.launch {
-            slackRepository.userList()
+            slackRepository.userList { it.toRowState() }
                 .flowOn(Dispatchers.IO)
                 .map {
                     when (it) {
                         is SlackRepository.FetchResult.Loading -> TeamListViewState.Loading
                         is SlackRepository.FetchResult.Error -> TeamListViewState.Error(it.errorMessage)
-                        is SlackRepository.FetchResult.Data -> TeamListViewState.Data(it.value.map { it.toRowState() })
+                        is SlackRepository.FetchResult.Data -> TeamListViewState.Data(it.value)
                     }
                 }.onEach { setState { it } }
                 // .catch { setState { MainViewState.Error(it.message ?: it.javaClass.simpleName) } }

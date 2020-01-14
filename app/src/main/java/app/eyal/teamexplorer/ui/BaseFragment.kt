@@ -1,6 +1,7 @@
 package app.eyal.teamexplorer.ui
 
 import android.os.Bundle
+import androidx.databinding.ViewDataBinding
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavDirections
@@ -10,8 +11,15 @@ import app.eyal.teamexplorer.presenter.BasePresenter
 import com.airbnb.mvrx.BaseMvRxFragment
 import kotlinx.coroutines.launch
 
-abstract class BaseFragment<P: BasePresenter<*>>: BaseMvRxFragment() {
-    protected abstract val presenter: P
+abstract class BaseFragment<Presenter: BasePresenter<*>, Binding: ViewDataBinding>: BaseMvRxFragment() {
+    protected abstract val presenter: Presenter
+    private var _binding: Binding? = null
+
+    protected var binding: Binding
+        get() = checkNotNull(_binding)
+        set(value) {
+            _binding = value
+        }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -20,6 +28,11 @@ abstract class BaseFragment<P: BasePresenter<*>>: BaseMvRxFragment() {
                 findNavController().navigate(first, second)
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
 
