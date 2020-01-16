@@ -2,4 +2,8 @@
     <string name="app_name">TeamViewer</string>
     <string name="avatar_description">Avatar</string>
     <string name="profile_picture_description">Profile picture</string>
+
+    <string name="enter_token">Enter Token</string>
+    <string name="token_hint">Token</string>
+    <string name="ok_lable">OK</string>
 </resources>

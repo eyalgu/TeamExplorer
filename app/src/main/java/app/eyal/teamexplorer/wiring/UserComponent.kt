@@ -1,11 +1,9 @@
 package app.eyal.teamexplorer.wiring
 
+import okhttp3.Interceptor
+import okhttp3.Response
 import android.content.Context
-import androidx.navigation.NavController
-import androidx.navigation.findNavController
 import androidx.room.Room
-import app.eyal.teamexplorer.MainActivity
-import app.eyal.teamexplorer.R
 import app.eyal.teamexplorer.repository.SlackService
 import app.eyal.teamexplorer.repository.RealSlackRepository
 import app.eyal.teamexplorer.repository.SlackDatabase
@@ -20,21 +18,24 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-interface MainActivityComponent {
+interface UserComponent {
     val slackRepository: SlackRepository
 }
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-internal class RealMainActivityComponent(mainActivity: MainActivity) : MainActivityComponent {
-    override val slackRepository: SlackRepository = provideSlackRepository(mainActivity.applicationContext)
+internal class RealUserComponent(applicationContext: Context, token: String) : UserComponent {
+    override val slackRepository: SlackRepository = provideSlackRepository(applicationContext, token)
 }
 
-private fun provideSlackService(): SlackService {
+private fun provideSlackService(token: String): SlackService {
     val interceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
-    val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
+    val client = OkHttpClient.Builder()
+        .addInterceptor(interceptor)
+        .addInterceptor(TokenInterceptor(token))
+        .build()
 
     val retrofit = Retrofit.Builder()
         .addConverterFactory(MoshiConverterFactory.create())
@@ -51,7 +52,19 @@ private fun provideSlackDatabase(context: Context): SlackDatabase {
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-private fun provideSlackRepository(context: Context) = RealSlackRepository(
-    service = provideSlackService(),
+private fun provideSlackRepository(context: Context, token: String) = RealSlackRepository(
+    service = provideSlackService(token),
     dao = provideSlackDatabase(context).slackDao()
 )
+
+class TokenInterceptor(private val token: String) : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val url = chain.request().url.newBuilder()
+            .addQueryParameter("token", token)
+            .build()
+        val request = chain.request().newBuilder()
+            .url(url)
+            .build()
+        return chain.proceed(request)
+    }
+}

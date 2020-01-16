@@ -7,11 +7,11 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDirections
 import androidx.navigation.Navigator
 import androidx.navigation.fragment.findNavController
-import app.eyal.teamexplorer.presenter.BasePresenter
+import app.eyal.teamexplorer.presenter.BaseFragmentPresenter
 import com.airbnb.mvrx.BaseMvRxFragment
 import kotlinx.coroutines.launch
 
-abstract class BaseFragment<Presenter: BasePresenter<*>, Binding: ViewDataBinding>: BaseMvRxFragment() {
+abstract class BaseFragment<Presenter: BaseFragmentPresenter<*>, Binding: ViewDataBinding>: BaseMvRxFragment() {
     protected abstract val presenter: Presenter
     private var _binding: Binding? = null
 

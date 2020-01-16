@@ -4,22 +4,47 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/teamListFragment">
+    app:startDestination="@id/splashScreenFragment">
+
+    <fragment
+        android:id="@+id/splashScreenFragment"
+        android:name="app.eyal.teamexplorer.splashscreen.SplashScreenFragment"
+        android:label="SplashScreen"
+        tools:layout="@layout/splash_screen">
+        <action
+            android:id="@+id/action_splashScreenFragment_to_teamListFragment"
+            app:destination="@id/teamListFragment"
+            app:popUpTo="@id/nav_graph" />
+        <action
+            android:id="@+id/action_splashScreenFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="app.eyal.teamexplorer.login.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/login_screen">
+        <action
+            android:id="@+id/action_loginFragment_to_teamListFragment"
+            app:destination="@id/teamListFragment"
+            app:popUpTo="@id/nav_graph" />
+    </fragment>
 
     <fragment
         android:id="@+id/teamListFragment"
-        android:name="app.eyal.teamexplorer.ui.TeamListFragment"
+        android:name="app.eyal.teamexplorer.teamlist.TeamListFragment"
         android:label="TeamList"
         tools:layout="@layout/team_list_fragment">
         <action
             android:id="@+id/action_teamListFragment_to_userProfileFragment"
-            app:destination="@id/userProfileFragment"
-            app:popUpTo="@id/teamListFragment" />
+            app:destination="@id/userProfileFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/userProfileFragment"
-        android:name="app.eyal.teamexplorer.ui.UserProfileFragment"
+        android:name="app.eyal.teamexplorer.userprofile.UserProfileFragment"
         android:label="UserProfile"
         tools:layout="@layout/user_profile_fragment">
         <argument

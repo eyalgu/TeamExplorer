@@ -1,7 +1,6 @@
-package app.eyal.teamexplorer.ui
+package app.eyal.teamexplorer.teamlist
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,14 +15,8 @@ import app.eyal.teamexplorer.R
 import app.eyal.teamexplorer.UserRowItemBindingModel_
 import app.eyal.teamexplorer.databinding.TeamListFragmentBinding
 import app.eyal.teamexplorer.databinding.UserRowItemBinding
-import app.eyal.teamexplorer.placeholderRowItem
-import app.eyal.teamexplorer.presenter.TeamListPresenter
-import app.eyal.teamexplorer.presenter.UserProfileViewState
-import app.eyal.teamexplorer.presenter.UserRowState
-import app.eyal.teamexplorer.repository.FeedEntity
-import app.eyal.teamexplorer.userRowItem
-import app.eyal.teamexplorer.wiring.RealTeamListFragmentComponent
-import app.eyal.teamexplorer.wiring.TeamListFragmentComponent
+import app.eyal.teamexplorer.ui.BaseFragment
+import app.eyal.teamexplorer.ui.loadImage
 import com.airbnb.epoxy.EpoxyModel
 import com.airbnb.epoxy.addGlidePreloader
 import com.airbnb.epoxy.glidePreloader
@@ -36,9 +29,9 @@ import kotlinx.coroutines.FlowPreview
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-class TeamListFragment : BaseFragment<TeamListPresenter, TeamListFragmentBinding>() {
+class TeamListFragment : BaseFragment<TeamListFragmentPresenter, TeamListFragmentBinding>() {
 
-    override val presenter: TeamListPresenter by fragmentViewModel()
+    override val presenter: TeamListFragmentPresenter by fragmentViewModel()
     lateinit var component: TeamListFragmentComponent
     lateinit var controller: MyController
 
@@ -48,7 +41,7 @@ class TeamListFragment : BaseFragment<TeamListPresenter, TeamListFragmentBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         component = RealTeamListFragmentComponent(
-            activityComponent = (activity!! as MainActivity).mainActivityComponent,
+            userComponent = (activity!! as MainActivity).userComponent!!,
             fragment = this
         )
     }
@@ -70,13 +63,13 @@ class TeamListFragment : BaseFragment<TeamListPresenter, TeamListFragmentBinding
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        invalidate()
         postponeEnterTransition()
         binding.recyclerView.doOnPreDraw {
             startPostponedEnterTransition()
         }
         controller = MyController()
         binding.recyclerView.setController(controller)
+        invalidate()
     }
 
     override fun invalidate(): Unit = withState(presenter) { state ->

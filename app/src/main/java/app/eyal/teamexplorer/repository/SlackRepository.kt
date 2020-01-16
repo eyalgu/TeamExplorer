@@ -48,7 +48,7 @@ class RealSlackRepository(
 
         val networkFlow = flow<SlackRepository.FetchResult<List<T>>> {
             emit(SlackRepository.FetchResult.Loading())
-            with(service.userList(SlackService.TOKEN)) {
+            with(service.userList()) {
                 if (ok) {
                     with(members!!.map { it.toEntity() }) {
                         dao.insertUserList(this)
@@ -84,7 +84,7 @@ class RealSlackRepository(
     override fun user(id: String): Flow<SlackRepository.FetchResult<UserEntity>> {
         val networkFlow = flow<SlackRepository.FetchResult<UserEntity>> {
             emit(SlackRepository.FetchResult.Loading())
-            with(service.userList(SlackService.TOKEN)) {
+            with(service.userList()) {
                 if (ok) {
                     with(members!!.map { it.toEntity() }) {
                         dao.insertUserList(this)

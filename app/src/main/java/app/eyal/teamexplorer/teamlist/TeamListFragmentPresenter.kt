@@ -1,14 +1,12 @@
-package app.eyal.teamexplorer.presenter
+package app.eyal.teamexplorer.teamlist
 
 import android.view.View
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.FragmentNavigator
-import androidx.paging.DataSource
 import androidx.paging.PagedList
+import app.eyal.teamexplorer.presenter.BaseFragmentPresenter
 import app.eyal.teamexplorer.repository.FeedEntity
 import app.eyal.teamexplorer.repository.SlackRepository
-import app.eyal.teamexplorer.ui.TeamListFragment
-import app.eyal.teamexplorer.ui.TeamListFragmentDirections
 import com.airbnb.mvrx.FragmentViewModelContext
 import com.airbnb.mvrx.MvRxState
 import com.airbnb.mvrx.MvRxViewModelFactory
@@ -27,7 +25,8 @@ data class UserRowState(
     val name: String,
     val id: String
 ) {
-    val onClickActionBuilder: TeamListActionBuilder = TeamListActionBuilder(id)
+    val onClickActionBuilder: TeamListActionBuilder =
+        TeamListActionBuilder(id)
 }
 
 data class TeamListViewState(
@@ -40,12 +39,15 @@ data class TeamListViewState(
 
     companion object {
         val Loading =
-            TeamListViewState(loadingIndicatorVisibility = View.VISIBLE)
+            TeamListViewState(
+                loadingIndicatorVisibility = View.VISIBLE
+            )
 
-        fun Error(errorMessage: String) = TeamListViewState(
-            errorMessageVisibility = View.VISIBLE,
-            errorMessage = errorMessage
-        )
+        fun Error(errorMessage: String) =
+            TeamListViewState(
+                errorMessageVisibility = View.VISIBLE,
+                errorMessage = errorMessage
+            )
 
         fun Data(userList: PagedList<UserRowState>) =
             TeamListViewState(
@@ -63,30 +65,34 @@ sealed class TeamListAction {
 }
 
 class TeamListActionBuilder(private val userId: String) {
-    fun buildAction(args: FragmentNavigator.Extras?) = TeamListAction.UserRowClicked(userId, args)
+    fun buildAction(args: FragmentNavigator.Extras?) =
+        TeamListAction.UserRowClicked(
+            userId,
+            args
+        )
 }
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-class TeamListPresenter(
+class TeamListFragmentPresenter(
     initialViewState: TeamListViewState,
     slackRepository: SlackRepository
-) : BasePresenter<TeamListViewState>(initialState = initialViewState, debugMode = true) {
+) : BaseFragmentPresenter<TeamListViewState>(initialState = initialViewState, debugMode = true) {
 
     class Factory(private val slackRepository: SlackRepository) {
         fun create(initialViewState: TeamListViewState):
-            TeamListPresenter =
-            TeamListPresenter(
+            TeamListFragmentPresenter =
+            TeamListFragmentPresenter(
                 initialViewState = initialViewState,
                 slackRepository = slackRepository
             )
     }
 
-    companion object : MvRxViewModelFactory<TeamListPresenter, TeamListViewState> {
+    companion object : MvRxViewModelFactory<TeamListFragmentPresenter, TeamListViewState> {
         override fun create(
             viewModelContext: ViewModelContext,
             state: TeamListViewState
-        ): TeamListPresenter? = with(viewModelContext.teamListFragment) {
+        ): TeamListFragmentPresenter? = with(viewModelContext.teamListFragment) {
             component.presenterFactory.create(state)
         }
 
@@ -104,8 +110,12 @@ class TeamListPresenter(
                 .map {
                     when (it) {
                         is SlackRepository.FetchResult.Loading -> TeamListViewState.Loading
-                        is SlackRepository.FetchResult.Error -> TeamListViewState.Error(it.errorMessage)
-                        is SlackRepository.FetchResult.Data -> TeamListViewState.Data(it.value)
+                        is SlackRepository.FetchResult.Error -> TeamListViewState.Error(
+                            it.errorMessage
+                        )
+                        is SlackRepository.FetchResult.Data -> TeamListViewState.Data(
+                            it.value
+                        )
                     }
                 }.onEach { setState { it } }
                 // .catch { setState { MainViewState.Error(it.message ?: it.javaClass.simpleName) } }
@@ -113,11 +123,12 @@ class TeamListPresenter(
         }
     }
 
-    private fun FeedEntity.toRowState() = UserRowState(
-        imageUrl = imageUrl, // TODO select based on screen size
-        name = displayName,
-        id = userId
-    )
+    private fun FeedEntity.toRowState() =
+        UserRowState(
+            imageUrl = imageUrl, // TODO select based on screen size
+            name = displayName,
+            id = userId
+        )
 
     fun performAction(actionBuilder: TeamListActionBuilder, args: FragmentNavigator.Extras?): Unit =
         with(actionBuilder.buildAction(args)) {

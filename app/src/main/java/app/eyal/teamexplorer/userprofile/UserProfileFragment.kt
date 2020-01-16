@@ -1,47 +1,40 @@
-package app.eyal.teamexplorer.ui
+package app.eyal.teamexplorer.userprofile
 
 import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.transition.TransitionInflater
 import app.eyal.teamexplorer.MainActivity
 import app.eyal.teamexplorer.R
 import app.eyal.teamexplorer.databinding.UserProfileFragmentBinding
-import app.eyal.teamexplorer.presenter.UserProfileDetailsState
-import app.eyal.teamexplorer.presenter.UserProfilePresenter
-import app.eyal.teamexplorer.wiring.RealUserFragmentComponent
-import app.eyal.teamexplorer.wiring.UserFragmentComponent
-import com.airbnb.mvrx.BaseMvRxFragment
+import app.eyal.teamexplorer.ui.BaseFragment
+import app.eyal.teamexplorer.ui.loadImage
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
-import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import java.util.concurrent.TimeUnit
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-class UserProfileFragment : BaseFragment<UserProfilePresenter, UserProfileFragmentBinding>() {
+class UserProfileFragment : BaseFragment<UserProfileFragmentPresenter, UserProfileFragmentBinding>() {
 
     val args: UserProfileFragmentArgs by navArgs()
     lateinit var component: UserFragmentComponent
 
-    override val presenter: UserProfilePresenter by fragmentViewModel()
+    override val presenter: UserProfileFragmentPresenter by fragmentViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         component = RealUserFragmentComponent(
-            mainActivityComponent = (activity!! as MainActivity).mainActivityComponent,
+            userComponent = (activity!! as MainActivity).userComponent!!,
             fragment = this
         )
     }

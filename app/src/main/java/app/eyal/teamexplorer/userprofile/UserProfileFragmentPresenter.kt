@@ -1,11 +1,10 @@
-package app.eyal.teamexplorer.presenter
+package app.eyal.teamexplorer.userprofile
 
 import android.view.View
 import androidx.lifecycle.viewModelScope
+import app.eyal.teamexplorer.presenter.BaseFragmentPresenter
 import app.eyal.teamexplorer.repository.SlackRepository
 import app.eyal.teamexplorer.repository.UserEntity
-import app.eyal.teamexplorer.ui.UserProfileFragment
-import app.eyal.teamexplorer.ui.UserProfileFragmentArgs
 import com.airbnb.mvrx.FragmentViewModelContext
 import com.airbnb.mvrx.MvRxState
 import com.airbnb.mvrx.MvRxViewModelFactory
@@ -36,45 +35,50 @@ data class UserProfileViewState(
     val userProfileDetailsState: UserProfileDetailsState = UserProfileDetailsState.Empty
 ): MvRxState {
     companion object {
-        val Loading = UserProfileViewState(loadingIndicatorVisibility = View.VISIBLE)
-        fun Error(errorMessage: String) = UserProfileViewState(
-            errorMessageVisibility = View.VISIBLE,
-            errorMessage = errorMessage
+        val Loading = UserProfileViewState(
+            loadingIndicatorVisibility = View.VISIBLE
         )
-        fun Data(userProfileDetailsState: UserProfileDetailsState) = UserProfileViewState(
-            userProfileDetailsVisibility = View.VISIBLE,
-            userProfileDetailsState = userProfileDetailsState
-        )
+        fun Error(errorMessage: String) =
+            UserProfileViewState(
+                errorMessageVisibility = View.VISIBLE,
+                errorMessage = errorMessage
+            )
+        fun Data(userProfileDetailsState: UserProfileDetailsState) =
+            UserProfileViewState(
+                userProfileDetailsVisibility = View.VISIBLE,
+                userProfileDetailsState = userProfileDetailsState
+            )
 
     }
 }
 
 @ExperimentalCoroutinesApi
 @FlowPreview
-class UserProfilePresenter(
+class UserProfileFragmentPresenter(
     initialViewState: UserProfileViewState,
     private val slackRepository: SlackRepository,
     private val args: UserProfileFragmentArgs
 ) :
-    BasePresenter<UserProfileViewState>(initialState = initialViewState, debugMode = true) {
+    BaseFragmentPresenter<UserProfileViewState>(initialState = initialViewState, debugMode = true) {
 
     class Factory(
         private val slackRepository: SlackRepository,
         private val args: UserProfileFragmentArgs,
         private val glide: RequestManager
     ) {
-        fun create(initialViewState: UserProfileViewState) = UserProfilePresenter(
-            initialViewState = initialViewState,
-            slackRepository = slackRepository,
-            args = args
-        )
+        fun create(initialViewState: UserProfileViewState) =
+            UserProfileFragmentPresenter(
+                initialViewState = initialViewState,
+                slackRepository = slackRepository,
+                args = args
+            )
     }
 
-    companion object : MvRxViewModelFactory<UserProfilePresenter, UserProfileViewState> {
+    companion object : MvRxViewModelFactory<UserProfileFragmentPresenter, UserProfileViewState> {
         override fun create(
             viewModelContext: ViewModelContext,
             state: UserProfileViewState
-        ): UserProfilePresenter? {
+        ): UserProfileFragmentPresenter? {
             return viewModelContext.userProfileFragment.component.presenterFactory.create(
                 state
             )
@@ -93,8 +97,12 @@ class UserProfilePresenter(
                 .map {
                     when(it) {
                         is SlackRepository.FetchResult.Loading -> UserProfileViewState.Loading
-                        is SlackRepository.FetchResult.Error -> UserProfileViewState.Error(it.errorMessage)
-                        is SlackRepository.FetchResult.Data<UserEntity> -> UserProfileViewState.Data(it.value.toUserProfileDetailsState())
+                        is SlackRepository.FetchResult.Error -> UserProfileViewState.Error(
+                            it.errorMessage
+                        )
+                        is SlackRepository.FetchResult.Data<UserEntity> -> UserProfileViewState.Data(
+                            it.value.toUserProfileDetailsState()
+                        )
                     }
                 }
                 .onEach { setState { it } }
@@ -104,8 +112,9 @@ class UserProfilePresenter(
 
 }
 
-fun UserEntity.toUserProfileDetailsState() = UserProfileDetailsState(
-    name = display_name,
-    status = status_text,
-    profilePictureUrl = image_192
-)
+fun UserEntity.toUserProfileDetailsState() =
+    UserProfileDetailsState(
+        name = display_name,
+        status = status_text,
+        profilePictureUrl = image_192
+    )
