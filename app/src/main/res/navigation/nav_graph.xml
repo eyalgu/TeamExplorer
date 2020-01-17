@@ -10,27 +10,13 @@
         android:id="@+id/splashScreenFragment"
         android:name="app.eyal.teamexplorer.splashscreen.SplashScreenFragment"
         android:label="SplashScreen"
-        tools:layout="@layout/splash_screen">
-        <action
-            android:id="@+id/action_splashScreenFragment_to_teamListFragment"
-            app:destination="@id/teamListFragment"
-            app:popUpTo="@id/nav_graph" />
-        <action
-            android:id="@+id/action_splashScreenFragment_to_loginFragment"
-            app:destination="@id/loginFragment"
-            app:popUpTo="@id/nav_graph" />
-    </fragment>
+        tools:layout="@layout/splash_screen"/>
 
     <fragment
         android:id="@+id/loginFragment"
         android:name="app.eyal.teamexplorer.login.LoginFragment"
         android:label="Login"
-        tools:layout="@layout/login_screen">
-        <action
-            android:id="@+id/action_loginFragment_to_teamListFragment"
-            app:destination="@id/teamListFragment"
-            app:popUpTo="@id/nav_graph" />
-    </fragment>
+        tools:layout="@layout/login_screen"/>
 
     <fragment
         android:id="@+id/teamListFragment"
